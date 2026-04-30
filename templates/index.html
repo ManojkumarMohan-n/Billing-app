@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Electrical Shop Billing</title>
+</head>
+<body>
+
+<h2>Add Product</h2>
+<form method="POST" action="/add_product">
+    Name: <input type="text" name="name" required>
+    Price: <input type="number" name="price" required>
+    <button type="submit">Add</button>
+</form>
+
+<hr>
+
+<h2>Create Bill</h2>
+<form method="POST" action="/create_bill">
+
+    {% for product in products %}
+        <input type="checkbox" name="product" value="{{ product[0] }}">
+        {{ product[1] }} - ₹{{ product[2] }} <br>
+    {% endfor %}
+
+    <br>
+    <button type="submit">Generate Bill</button>
+</form>
+
+</body>
+</html>
