@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Dashboard • ElectroShop{% endblock %}
 
@@ -57,9 +57,9 @@
             <canvas id="topProductsChart"></canvas>
         </div>
         <div class="pie-legend">
-            {% for idx, product in enumerate(top_products, 1) %}
+            {% for product in top_products %}
                 <div class="pie-legend-item">
-                    <span class="legend-swatch" style="background: hsl({{ (idx - 1) * 36 }}, 84%, 62%);"></span>
+                    <span class="legend-swatch" style="background: hsl({{ loop.index0 * 36 }}, 84%, 62%);"></span>
                     <span>{{ product[0] }}</span>
                     <span class="badge">{{ product[1] }} sold</span>
                 </div>
@@ -82,9 +82,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for idx, product in enumerate(top_products, 1) %}
+                        {% for product in top_products %}
                             <tr>
-                                <td><strong>#{{ idx }}</strong></td>
+                                <td><strong>#{{ loop.index }}</strong></td>
                                 <td>{{ product[0] }}</td>
                                 <td>{{ product[1] }}</td>
                             </tr>
