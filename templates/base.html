@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>{% block title %}ElectroShop Billing{% endblock %}</title>
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="app-shell">
+    {% include 'components/navbar.html' %}
+
+    <main class="main-content">
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">SaaS invoicing & inventory</p>
+                <h1>{% block page_heading %}Effortless billing for modern shops{% endblock %}</h1>
+                <p class="page-subtitle">{% block page_lead %}Fast, clean and data-driven workflows for your store operations.{% endblock %}</p>
+            </div>
+            <div class="page-actions">
+                {% block page_action %}{% endblock %}
+            </div>
+        </section>
+
+        <section class="page-body">
+            {% block content %}{% endblock %}
+        </section>
+    </main>
+
+    {% include 'components/footer.html' %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>

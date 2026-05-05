@@ -1,13 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>Bill</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<h1>Total Bill: ₹{{ total }}</h1>
+{% block title %}Invoice • ElectroShop{% endblock %}
 
-<a href="/">Back</a>
+{% block page_heading %}Invoice generated{% endblock %}
+{% block page_lead %}Review the total and print a polished receipt for your customer.{% endblock %}
+{% block page_action %}<a href="/" class="btn btn-secondary">Back to billing</a>{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<div class="bill-container">
+    <div class="bill-header">
+        <h1>Invoice ready</h1>
+        <p class="bill-date">{{ current_date }}</p>
+    </div>
+
+    <div class="bill-section">
+        <p class="bill-label">Amount payable</p>
+        <p class="bill-amount">₹{{ "%.2f"|format(total) }}</p>
+    </div>
+
+    <div class="bill-divider"></div>
+
+    <div class="bill-details">
+        <p class="bill-status">Your invoice has been recorded successfully.</p>
+    </div>
+
+    <div class="bill-actions">
+        <button class="btn btn-primary" onclick="window.print()">Print invoice</button>
+        <a href="/" class="btn btn-secondary">Create another bill</a>
+    </div>
+</div>
+{% endblock %}

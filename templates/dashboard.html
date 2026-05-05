@@ -1,0 +1,194 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Dashboard • ElectroShop{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block page_heading %}Sales dashboard{% endblock %}
+{% block page_lead %}Compare performance across daily, weekly, monthly, and yearly periods with smart insights.{% endblock %}
+{% block page_action %}<a href="/" class="btn btn-secondary">Create invoice</a>{% endblock %}
+
+{% block content %}
+<section class="stats-grid">
+    <article class="metric-card">
+        <p class="metric-label">Total sales</p>
+        <p class="metric-value">&#8377;{{ "%.2f"|format(total_sales_amount) }}</p>
+        <p class="metric-copy">{{ total_sales_count }} transactions recorded.</p>
+    </article>
+
+    <article class="metric-card">
+        <p class="metric-label">Today</p>
+        <p class="metric-value">&#8377;{{ "%.2f"|format(today_sales) }}</p>
+        <p class="metric-copy">Today&#39;s revenue performance.</p>
+    </article>
+
+    <article class="metric-card">
+        <p class="metric-label">This week</p>
+        <p class="metric-value">&#8377;{{ "%.2f"|format(week_sales) }}</p>
+        <p class="metric-copy">Current calendar week.</p>
+    </article>
+
+    <article class="metric-card">
+        <p class="metric-label">This year</p>
+        <p class="metric-value">&#8377;{{ "%.2f"|format(year_sales) }}</p>
+        <p class="metric-copy">Year-to-date revenue.</p>
+    </article>
+</section>
+
+<section class="chart-card">
+    <div class="chart-title">Comparative sales trends</div>
+    <div class="chart-tabs">
+        <button class="chart-tab active" data-chart="daily">Daily</button>
+        <button class="chart-tab" data-chart="weekly">Weekly</button>
+        <button class="chart-tab" data-chart="monthly">Monthly</button>
+        <button class="chart-tab" data-chart="yearly">Yearly</button>
+    </div>
+    <div class="chart-container">
+        <canvas id="trendChart"></canvas>
+    </div>
+</section>
+
+<section class="section-grid">
+    <div class="chart-card">
+        <h2 class="chart-title">Top selling products</h2>
+        <div class="chart-container">
+            <canvas id="topProductsChart"></canvas>
+        </div>
+        <div class="pie-legend">
+            {% for idx, product in enumerate(top_products, 1) %}
+                <div class="pie-legend-item">
+                    <span class="legend-swatch" style="background: hsl({{ (idx - 1) * 36 }}, 84%, 62%);"></span>
+                    <span>{{ product[0] }}</span>
+                    <span class="badge">{{ product[1] }} sold</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Sales breakdown</h2>
+        </div>
+        <div class="card-body">
+            {% if top_products %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Product</th>
+                            <th>Units</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for idx, product in enumerate(top_products, 1) %}
+                            <tr>
+                                <td><strong>#{{ idx }}</strong></td>
+                                <td>{{ product[0] }}</td>
+                                <td>{{ product[1] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <p>No sales data available yet. Create some bills to start seeing product trends.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const chartData = {
+    daily: {
+        labels: {{ daily_sales.keys()|list|tojson }},
+        values: {{ daily_sales.values()|list|tojson }}
+    },
+    weekly: {
+        labels: {{ weekly_sales.keys()|list|tojson }},
+        values: {{ weekly_sales.values()|list|tojson }}
+    },
+    monthly: {
+        labels: {{ monthly_sales.keys()|list|tojson }},
+        values: {{ monthly_sales.values()|list|tojson }}
+    },
+    yearly: {
+        labels: {{ yearly_sales.keys()|list|tojson }},
+        values: {{ yearly_sales.values()|list|tojson }}
+    }
+};
+
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+let trendChart = new Chart(trendCtx, {
+    type: 'line',
+    data: {
+        labels: chartData.daily.labels,
+        datasets: [{
+            label: 'Sales',
+            data: chartData.daily.values,
+            borderColor: '#2952ff',
+            backgroundColor: 'rgba(41, 82, 255, 0.16)',
+            fill: true,
+            tension: 0.32,
+            pointRadius: 4,
+            pointBackgroundColor: '#2952ff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: value => '₹' + value
+                }
+            }
+        }
+    }
+});
+
+const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
+new Chart(topProductsCtx, {
+    type: 'pie',
+    data: {
+        labels: {{ top_labels|tojson }},
+        datasets: [{
+            data: {{ top_values|tojson }},
+            backgroundColor: [
+                '#2952ff', '#3b82f6', '#60a5fa', '#0f766e', '#10b981', '#f59e0b', '#f97316', '#ef4444', '#a855f7', '#ec4899'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { boxWidth: 12, padding: 16 }
+            }
+        }
+    }
+});
+
+const tabs = document.querySelectorAll('.chart-tab');
+tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+        tabs.forEach((t) => t.classList.remove('active'));
+        tab.classList.add('active');
+        const type = tab.dataset.chart;
+        trendChart.data.labels = chartData[type].labels;
+        trendChart.data.datasets[0].data = chartData[type].values;
+        trendChart.update();
+    });
+});
+</script>
+{% endblock %}

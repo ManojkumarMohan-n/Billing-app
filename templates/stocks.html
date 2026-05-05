@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Stocks • ElectroShop{% endblock %}
+
+{% block page_heading %}Inventory control{% endblock %}
+{% block page_lead %}Track stock levels, update availability, and keep your store fully stocked with smart inventory controls.{% endblock %}
+{% block page_action %}<a href="/dashboard" class="btn btn-secondary">View analytics</a>{% endblock %}
+
+{% block content %}
+<div class="section-grid">
+    <section class="card">
+        <div class="card-header">
+            <h2 class="card-title">Add inventory</h2>
+        </div>
+        <div class="card-body">
+            <p class="card-copy">Top up stock quantities in a single action and avoid supply gaps.</p>
+            <form method="POST" action="/add_stock" class="form-group">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="product_id">Select product</label>
+                        <select id="product_id" name="product_id" required>
+                            {% for stock in stocks_data %}
+                                <option value="{{ stock[0] }}">{{ stock[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="quantity">Quantity</label>
+                        <input id="quantity" type="number" name="quantity" placeholder="Enter quantity" min="1" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Top up stock</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-header">
+            <h2 class="card-title">Stock inventory</h2>
+        </div>
+        <div class="card-body">
+            <p class="card-copy">Search, edit quantities, or remove items from inventory with fast actions.</p>
+            <form method="GET" action="/stocks" class="form-group">
+                <div class="form-field">
+                    <label for="searchQuery">Search products</label>
+                    <input id="searchQuery" type="text" name="q" placeholder="Search by name" value="{{ search_query }}">
+                </div>
+            </form>
+            {% if stocks_data %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in stocks_data %}
+                            <tr>
+                                <td>
+                                    <p class="item-title">{{ product[1] }}</p>
+                                </td>
+                                <td>₹{{ "%.2f"|format(product[2]) }}</td>
+                                <td>{{ product[3] or 0 }}</td>
+                                <td>
+                                    {% if product[3] and product[3] > 10 %}
+                                        <span class="status-pill in-stock">In stock</span>
+                                    {% elif product[3] and product[3] > 0 %}
+                                        <span class="status-pill low-stock">Low stock</span>
+                                    {% else %}
+                                        <span class="status-pill out-stock">Out of stock</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="openEditModal({{ product[0] }}, {{ product[3] or 0 }})">Edit</button>
+                                        <form method="POST" action="/remove_stock/{{ product[0] }}" onsubmit="return confirm('Remove this product and stock?');">
+                                            <button type="submit" class="btn btn-ghost btn-sm">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <p>No inventory items yet. Add products from the billing page to start tracking stock.</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">Edit stock quantity</div>
+        <form id="editForm" method="POST" class="form-group">
+            <div class="form-field">
+                <label for="editQuantity">New quantity</label>
+                <input id="editQuantity" type="number" name="quantity" min="0" required>
+            </div>
+            <div class="form-row">
+                <button type="button" class="btn btn-secondary btn-block" onclick="closeEditModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-block">Save changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openEditModal(productId, currentQty) {
+    document.getElementById('editModal').classList.add('active');
+    document.getElementById('editQuantity').value = currentQty;
+    document.getElementById('editForm').action = `/update_stock/${productId}`;
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
+}
+
+window.addEventListener('click', (event) => {
+    const modal = document.getElementById('editModal');
+    if (event.target === modal) {
+        modal.classList.remove('active');
+    }
+});
+</script>
+{% endblock %}

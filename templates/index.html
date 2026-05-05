@@ -1,30 +1,73 @@
-<!DOCTYPE html>
-<html>
-<head><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>Electrical Shop Billing</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<h2>Add Product</h2>
-<form method="POST" action="/add_product">
-    Name: <input type="text" name="name" required>
-    Price: <input type="number" name="price" required>
-    <button type="submit">Add</button>
-</form>
+{% block title %}Billing • ElectroShop{% endblock %}
 
-<hr>
+{% block page_heading %}Create invoices in seconds{% endblock %}
+{% block page_lead %}Add products, select items, and generate sleek, client-ready invoices from one premium dashboard.{% endblock %}
+{% block page_action %}<a href="/stocks" class="btn btn-secondary">Manage stock</a>{% endblock %}
 
-<h2>Create Bill</h2>
-<form method="POST" action="/create_bill">
+{% block content %}
+<div class="section-grid">
+    <section class="card">
+        <div class="card-header">
+            <h2 class="card-title">Add new product</h2>
+        </div>
+        <div class="card-body">
+            <p class="card-copy">Capture product details once and keep your inventory in sync with every sale.</p>
+            <form method="POST" action="/add_product" class="form-group">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="product-name">Product name</label>
+                        <input id="product-name" type="text" name="name" placeholder="E.g. LED Bulb" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="product-price">Price (₹)</label>
+                        <input id="product-price" type="number" name="price" placeholder="E.g. 1200" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Add product</button>
+            </form>
+        </div>
+    </section>
 
-    {% for product in products %}
-        <input type="checkbox" name="product" value="{{ product[0] }}">
-        {{ product[1] }} - ₹{{ product[2] }} <br>
-    {% endfor %}
+    <section class="card">
+        <div class="card-header">
+            <h2 class="card-title">Generate bill</h2>
+        </div>
+        <div class="card-body">
+            <p class="card-copy">Search and select products to build a modern invoice quickly.</p>
+            <div class="form-field">
+                <label for="productSearch">Quick search</label>
+                <input id="productSearch" type="text" placeholder="Search product name">
+            </div>
+            <form method="POST" action="/create_bill" class="form-group">
+                <label class="form-label">Select products</label>
+                <div class="checkbox-group">
+                    {% for product in products %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="product-{{ product[0] }}" name="product" value="{{ product[0] }}">
+                            <label for="product-{{ product[0] }}" class="checkbox-label">
+                                {{ product[1] }} <span class="badge">₹{{ "%.2f"|format(product[2]) }}</span>
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-success btn-block">Generate invoice</button>
+            </form>
+        </div>
+    </section>
+</div>
+{% endblock %}
 
-    <br>
-    <button type="submit">Generate Bill</button>
-</form>
-
-</body>
-</html>
+{% block scripts %}
+<script>
+const productSearch = document.getElementById('productSearch');
+productSearch?.addEventListener('input', (event) => {
+    const value = event.target.value.toLowerCase();
+    document.querySelectorAll('.checkbox-item').forEach((item) => {
+        const labelText = item.querySelector('label').textContent.toLowerCase();
+        item.style.display = labelText.includes(value) ? 'grid' : 'none';
+    });
+});
+</script>
+{% endblock %}
